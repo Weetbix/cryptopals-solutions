@@ -14,7 +14,7 @@ export function hammingDistance(a: string, b: string): number {
   return hammingDistanceBytes(encoder.encode(a), encoder.encode(b));
 }
 
-function hammingDistanceBytes(a: Uint8Array, b: Uint8Array): number {
+export function hammingDistanceBytes(a: Uint8Array, b: Uint8Array): number {
   return a.reduce((acc, current, i) => {
     // First get a variable holding all the different bits between the two
     let difference = a[i] ^ b[i];
