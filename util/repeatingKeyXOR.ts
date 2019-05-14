@@ -5,9 +5,13 @@ export interface KeysizeHamming {
   distance: number;
 }
 
-// For each KEYSIZE, take the first KEYSIZE worth of bytes, and the second KEYSIZE worth of bytes
-// and find the edit distance between them. Normalize this result by dividing by KEYSIZE.
-// The KEYSIZE with the smallest normalized edit distance is probably the key.
+/**
+ * Returns an array of Keysize Hamming distances ranked by the smallest hamming distance.
+ *
+ * For each KEYSIZE, take the first KEYSIZE worth of bytes, and the second KEYSIZE worth of bytes
+ * and find the edit distance between them. Normalize this result by dividing by KEYSIZE.
+ * The KEYSIZE with the smallest normalized edit distance is probably the key.
+ */
 export function keysizeRankings(data: Uint8Array): KeysizeHamming[] {
   const KEYSIZE_MIN_BYTES = 2;
   const KEYSIZE_MAX_BYTES = 40;
@@ -24,7 +28,7 @@ export function keysizeRankings(data: Uint8Array): KeysizeHamming[] {
 
     results.push({
       keysize,
-      distance: hammingDistanceBytes(first, second)
+      distance: hammingDistanceBytes(first, second) / keysize
     });
   }
 
