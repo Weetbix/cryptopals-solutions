@@ -6,6 +6,7 @@ export function decrypt(key: number, target: Uint8Array): Uint8Array {
 }
 
 export interface decryptionAttempt {
+  key: number;
   decoded: string;
   score: number;
 }
@@ -21,6 +22,7 @@ export function getBestDecryption(
     return [
       ...acc,
       {
+        key: currentKey,
         decoded,
         score: scoreText(decoded)
       }

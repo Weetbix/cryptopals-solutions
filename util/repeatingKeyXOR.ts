@@ -1,4 +1,6 @@
 import { hammingDistanceBytes, hammingDistance } from "./string.ts";
+import { chunk, tranpose } from "./array.ts";
+import { getBestDecryption } from "./singleByteXOR.ts";
 
 export interface KeysizeHamming {
   keysize: number;
@@ -33,4 +35,28 @@ export function keysizeRankings(data: Uint8Array): KeysizeHamming[] {
   }
 
   return results.sort((a, b) => a.distance - b.distance);
+}
+
+export function attemptKeyGuess(data: Uint8Array): string {
+  // Determine the likely key size
+  const keysizeGuesses = keysizeRankings(data);
+  console.log(keysizeGuesses);
+  const keysize = keysizeGuesses[2].keysize;
+
+  // split the input into KEY SIZE sized chunks
+  const chunked = chunk(data, keysize);
+
+  // Get an array of arrays where all the bytes in the array
+  // are encrypted using the same single XOR key
+  const byteAlignedArrays = tranpose(chunked);
+
+  console.log(byteAlignedArrays.length);
+
+  return byteAlignedArrays
+    .map(singleByteXORData => {
+      const keyByte = getBestDecryption(singleByteXORData).key;
+      const keyAscii = String.fromCharCode(keyByte);
+      return keyAscii;
+    })
+    .join("");
 }
