@@ -1,6 +1,17 @@
 export function scoreText(text: string) {
+  const scorers = [
+    { regex: /[a-z ]/, value: 1 },
+    { regex: /[A-Z]/, value: 0.5 }
+  ];
+
   return [...text].reduce(
-    (acc, char) => (/[a-zA-Z ]/.test(char) ? acc + 1 : acc),
+    (textScore, char) =>
+      textScore +
+      scorers.reduce(
+        (charScore, scorer) =>
+          scorer.regex.test(char) ? charScore + scorer.value : charScore,
+        0
+      ),
     0
   );
 }

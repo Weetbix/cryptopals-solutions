@@ -1,3 +1,4 @@
+import { scoreText } from "../util/string.ts";
 function hextob(hex: string) {
   const buffer = new Uint8Array(hex.length / 2);
 
@@ -13,13 +14,6 @@ function decryptSingleByte(key: number, target: Uint8Array): Uint8Array {
 
 function binaryToAscii(binary: Uint8Array): string {
   return new TextDecoder("utf-8").decode(binary);
-}
-
-function scoreText(text: string) {
-  return [...text].reduce(
-    (acc, char) => (/[a-zA-Z]/.test(char) ? acc + 1 : acc),
-    0
-  );
 }
 
 const hexEncodedInput =
