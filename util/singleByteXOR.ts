@@ -1,8 +1,20 @@
-import { binaryToAscii } from "./conversion.ts";
+import { binaryToAscii, binaryToHex } from "./conversion.ts";
 import { scoreText } from "./string.ts";
 
 export function decrypt(key: number, target: Uint8Array): Uint8Array {
   return target.map(targetByte => targetByte ^ key);
+}
+
+// Takes a normal string and returns a hex encoded string representation
+// of the encrypted data
+export function stringToEncryptedHexEncodedString(
+  key: number,
+  data: string
+): string {
+  const encoder = new TextEncoder();
+  const binaryData = encoder.encode(data);
+  const encryptedData = decrypt(key, binaryData);
+  return binaryToHex(encryptedData);
 }
 
 export interface decryptionAttempt {
