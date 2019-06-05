@@ -51,3 +51,13 @@ export function flatten(arrays: Uint8Array[]): Uint8Array {
 
   return result;
 }
+
+/**
+ * Determines if 2 uint8 arrays are equal
+ */
+export function equal(left: Uint8Array, right: Uint8Array): boolean {
+  if (left.length === right.length) {
+    return left.every((val, index) => right[index] === val);
+  }
+  return false;
+}
