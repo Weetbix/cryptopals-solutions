@@ -34,3 +34,20 @@ export function tranpose(arrays: Uint8Array[]): Uint8Array[] {
   }
   return transposed;
 }
+
+/**
+ * Flattens an array of uint8 arrays
+ * @param arrays
+ */
+export function flatten(arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((acc, a) => acc + a.length, 0);
+  const result = new Uint8Array(totalLength);
+
+  let offset = 0;
+  arrays.forEach((a, index) => {
+    result.set(a, offset);
+    offset += a.length;
+  });
+
+  return result;
+}
