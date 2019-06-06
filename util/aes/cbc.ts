@@ -1,5 +1,5 @@
 import { ECB } from "https://www.unpkg.com/aes-es@3.0.0/dist/index.esm.js";
-import pad from "../pkcs7/pad.ts";
+import { pad, unpad } from "../pkcs7/padding.ts";
 import { chunk, flatten } from "../array.ts";
 
 // In AES the block size is always 16 bytes / 128 bits
@@ -15,10 +15,6 @@ export function encrypt(
   iv: Uint8Array,
   data: Uint8Array
 ): Uint8Array {
-  if (data.length % BLOCK_SIZE !== 0) {
-    // Dont bother with padding yet
-    throw new Error("Key length should fit data length perfectly");
-  }
   if (iv.length !== BLOCK_SIZE) {
     throw new Error("Block and IV size must match");
   }
@@ -32,9 +28,13 @@ export function encrypt(
   // This is so that the decryption algorithn can determine if the
   // last byte of the last block is a padding byte or part of the
   // data.
-  //   if (data.length % BLOCK_SIZE === 0) {
-  //     blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
-  //   }
+  if (data.length % BLOCK_SIZE === 0) {
+    blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
+  } else {
+    // Otherwise, ensure the last block is padded correctly
+    const LAST_INDEX = blocks.length - 1;
+    blocks[LAST_INDEX] = pad(blocks[LAST_INDEX], BLOCK_SIZE);
+  }
 
   let previousBlock = iv;
   return flatten(
@@ -66,23 +66,23 @@ export function decrypt(
   const aesEcb = new ECB(key);
   const blocks = chunk(data, BLOCK_SIZE);
 
-  //   if (data.length % BLOCK_SIZE === 0) {
-  //     blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
-  //   }
-
   // To decrypt we must to the reverse of encryption:
   // - Decrypt the block
   // - XOR it against the previous ENCRYPTED block
   let previousBlock = iv;
-  return flatten(
-    blocks.map(block => {
-      const xoredBlock = new Uint8Array(BLOCK_SIZE);
-      aesEcb.decrypt(block, xoredBlock);
+  const decryptedBlocks = blocks.map(block => {
+    const xoredBlock = new Uint8Array(BLOCK_SIZE);
+    aesEcb.decrypt(block, xoredBlock);
 
-      const decrypted = xoredBlock.map((byte, i) => byte ^ previousBlock[i]);
+    const decrypted = xoredBlock.map((byte, i) => byte ^ previousBlock[i]);
 
-      previousBlock = block;
-      return decrypted;
-    })
-  );
+    previousBlock = block;
+    return decrypted;
+  });
+
+  // For decryption we should UNPAD the last byte
+  const LAST_INDEX = decryptedBlocks.length - 1;
+  decryptedBlocks[LAST_INDEX] = unpad(decryptedBlocks[LAST_INDEX]);
+
+  return flatten(decryptedBlocks);
 }

@@ -1,7 +1,7 @@
 import { encrypt, decrypt } from "../util/aes/cbc.ts";
 import { binaryToHex, binaryToAscii } from "../util/conversion.ts";
 
-const clearText = "YELLOW SUBMARINEYELLOW SUBMARINE";
+const clearText = "YELLOW SUBMARINEYELLOW SUBMARI";
 const encoder = new TextEncoder();
 
 const encrypted = encrypt(

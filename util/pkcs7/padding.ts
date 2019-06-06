@@ -20,3 +20,23 @@ export function pad(block: Uint8Array, padTo: number): Uint8Array {
 
   return newBlock;
 }
+
+/**
+ * Removes PKCS#7 Padding
+ *
+ * The block will be its original size after removing all the
+ * padding.
+ * For example: [ x, x, x, 0x2, 0x2 ]
+ * will return [ x, x, x ]
+ *
+ * A full pad block will return an empty array
+ * ie: [ 0x2, 0x2 ]
+ * returns: []
+ * @param block   Block to remove padding from
+ */
+export function unpad(block: Uint8Array): Uint8Array {
+  const padValue = block[block.length - 1];
+
+  const lastPadIndex = block.lastIndexOf(padValue);
+  return block.slice(0, lastPadIndex - 1);
+}
