@@ -32,9 +32,9 @@ export function encrypt(
   // This is so that the decryption algorithn can determine if the
   // last byte of the last block is a padding byte or part of the
   // data.
-  if (data.length % BLOCK_SIZE === 0) {
-    blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
-  }
+  //   if (data.length % BLOCK_SIZE === 0) {
+  //     blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
+  //   }
 
   let previousBlock = iv;
   return flatten(
@@ -46,6 +46,43 @@ export function encrypt(
       aesEcb.encrypt(xordBlock, encryptedBlock);
       previousBlock = encryptedBlock;
       return encryptedBlock;
+    })
+  );
+}
+
+export function decrypt(
+  key: Uint8Array,
+  iv: Uint8Array,
+  data: Uint8Array
+): Uint8Array {
+  if (data.length % BLOCK_SIZE !== 0) {
+    // Dont bother with padding yet
+    throw new Error("Key length should fit data length perfectly");
+  }
+  if (iv.length !== BLOCK_SIZE) {
+    throw new Error("Block and IV size must match");
+  }
+
+  const aesEcb = new ECB(key);
+  const blocks = chunk(data, BLOCK_SIZE);
+
+  //   if (data.length % BLOCK_SIZE === 0) {
+  //     blocks.push(pad(new Uint8Array(), BLOCK_SIZE));
+  //   }
+
+  // To decrypt we must to the reverse of encryption:
+  // - Decrypt the block
+  // - XOR it against the previous ENCRYPTED block
+  let previousBlock = iv;
+  return flatten(
+    blocks.map(block => {
+      const xoredBlock = new Uint8Array(BLOCK_SIZE);
+      aesEcb.decrypt(block, xoredBlock);
+
+      const decrypted = xoredBlock.map((byte, i) => byte ^ previousBlock[i]);
+
+      previousBlock = block;
+      return decrypted;
     })
   );
 }
