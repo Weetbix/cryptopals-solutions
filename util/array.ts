@@ -3,7 +3,7 @@
  */
 export function chunk(array: Uint8Array, chunkLength: number): Uint8Array[] {
   const chunks: Uint8Array[] = [];
-  for (let i = 0; i + chunkLength <= array.length; i += chunkLength) {
+  for (let i = 0; i < array.length; i += chunkLength) {
     chunks.push(array.slice(i, i + chunkLength));
   }
   return chunks;
