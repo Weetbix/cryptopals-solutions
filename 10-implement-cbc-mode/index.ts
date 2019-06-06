@@ -1,20 +1,19 @@
-import { encrypt, decrypt } from "../util/aes/cbc.ts";
-import { binaryToHex, binaryToAscii } from "../util/conversion.ts";
+import { decrypt } from "../util/aes/cbc.ts";
+import { binaryToAscii, base64ToUint8Array } from "../util/conversion.ts";
 
-const clearText = "YELLOW SUBMARINEYELLOW SUBMARI";
+const decoder = new TextDecoder("utf-8");
+const data = Deno.readFileSync("./input.txt");
+const cypherTexts = decoder
+  .decode(data)
+  .split("\n")
+  .join("");
+const cypherData = base64ToUint8Array(cypherTexts);
+
 const encoder = new TextEncoder();
-
-const encrypted = encrypt(
+const plainTextData = decrypt(
   encoder.encode("YELLOW SUBMARINE"),
-  encoder.encode("YELLOW SUBMARINE"),
-  encoder.encode(clearText)
+  new Uint8Array(16).fill(0), // IV of all 0's
+  cypherData
 );
 
-const again = decrypt(
-  encoder.encode("YELLOW SUBMARINE"),
-  encoder.encode("YELLOW SUBMARINE"),
-  encrypted
-);
-
-console.log(binaryToHex(encrypted));
-console.log(binaryToAscii(again));
+console.log(binaryToAscii(plainTextData));
