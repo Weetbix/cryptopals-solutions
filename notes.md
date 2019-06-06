@@ -29,3 +29,7 @@ For example I was encrypting "YELLOW SUBMARINEYELLOW SUBARMINE" and ending up
 with a result that was 16 bytes shorter than the results from the internet pages!
 
 Note: Check if your EBC encryption is padding!!
+
+Quite a long one, recommedned as one 2week study period.
+
+I implemented it with padding
