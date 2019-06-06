@@ -1,4 +1,4 @@
-import pad from "../util/pkcs7/pad.ts";
+import { pad } from "../util/pkcs7/padding.ts";
 
 const encoder = new TextEncoder();
 const input = encoder.encode("YELLOW SUBMARINE");

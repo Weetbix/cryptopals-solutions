@@ -11,7 +11,7 @@
  * @param padTo     Desired block size
  * @return          The new block padded, with length padTo
  */
-export default function pad(block: Uint8Array, padTo: number): Uint8Array {
+export function pad(block: Uint8Array, padTo: number): Uint8Array {
   if (block.length === padTo) return block;
 
   const padValue = padTo - block.length;
