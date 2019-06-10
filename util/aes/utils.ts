@@ -1,5 +1,8 @@
 import { flatten } from "../array.ts";
-import { encrypt as ECBEncrypt } from "./ecb.ts";
+import {
+  encrypt as ECBEncrypt,
+  getTotalNumberOfRepeatedBlocks
+} from "./ecb.ts";
 import { encrypt as CBCEncrypt } from "./cbc.ts";
 
 function randomInt(min: number, max: number): number {
@@ -39,4 +42,24 @@ export function encryptRandomECBorCBC(data: Uint8Array): Uint8Array {
   } else {
     return CBCEncrypt(key, iv, newPlaintext);
   }
+}
+
+export enum Algorithm {
+  ECB,
+  CBC
+}
+/**
+ * Given data encrypted in ECB or CBC mode, returns a guess
+ * as to which type it is.
+ * @param encryptedECBorCBCData     Encrypted data
+ */
+export function detectECBorCBC(encryptedECBorCBCData: Uint8Array): Algorithm {
+  const repeatedBlocks = getTotalNumberOfRepeatedBlocks(encryptedECBorCBCData);
+
+  // Not sure if this is a good heuristic, but lets say if more than 1%
+  // of the data was repeated blocks, it should be ECB encrypted
+  if (repeatedBlocks > encryptedECBorCBCData.length * 0.01) {
+    return Algorithm.ECB;
+  }
+  return Algorithm.CBC;
 }
