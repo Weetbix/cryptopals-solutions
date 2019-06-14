@@ -41,3 +41,7 @@ This is NOT the same as the key size detection for repeating key XOR
 as the algorithms are way different. 
 You should consider the weaknesses in AES when trying to work out how to 
 detect this.
+
+It would seem to me that for the attack to be successful.. you need to
+be able to feed extra data into the start of the cipher. ie, without access
+to a function that encrypts your input + hidden input, how would you crack it?
