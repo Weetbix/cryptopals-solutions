@@ -33,3 +33,11 @@ Note: Check if your EBC encryption is padding!!
 Quite a long one, recommedned as one 2week study period.
 
 I implemented it with padding
+
+12 - byte at a time ecb decryption
+Wow this one is fun
+The block size detection was fun to work out theoretically.
+This is NOT the same as the key size detection for repeating key XOR
+as the algorithms are way different. 
+You should consider the weaknesses in AES when trying to work out how to 
+detect this.
