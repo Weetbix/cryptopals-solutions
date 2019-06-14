@@ -21,8 +21,8 @@ const secretTextBase64 = `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc2
  */
 export function encrypt(data: Uint8Array): Uint8Array {
   // Need to decode and append the text
-  const appendedData = base64ToUint8Array(secretTextBase64);
-  const newPlaintext = flatten([data, appendedData]);
+  const dataToAppend = base64ToUint8Array(secretTextBase64);
+  const newPlaintext = flatten([data, dataToAppend]);
 
-  return AESEncrypt(ENCRYPTION_KEY, appendedData);
+  return AESEncrypt(ENCRYPTION_KEY, newPlaintext);
 }

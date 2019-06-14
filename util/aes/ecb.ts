@@ -30,7 +30,9 @@ export function decrypt(key: string, data: Uint8Array): Uint8Array {
 
 export function encrypt(key: Uint8Array, data: Uint8Array): Uint8Array {
   if (key.length !== 16) {
-    throw new Error(`Key length should be 128 bits but was ${key.length} bytes`);
+    throw new Error(
+      `Key length should be 128 bits but was ${key.length} bytes`
+    );
   }
 
   // Split the data into key size chunks for ECB
@@ -78,4 +80,57 @@ export function getTotalNumberOfRepeatedBlocks(
     const matches = blocks.filter(other => equal(block, other));
     return totalRepeats + matches.length - 1;
   }, 0);
+}
+
+/**
+ * Detects the block size used for an AES cipher function
+ * 
+ * As ECB block cipher always returns the same block output 
+ * for the same input, we can detect what the block size is 
+ * by continuously feeding a new block into the cipher at the 
+ * beginning. Then the first time we go OVER the threshold of
+ * the key length, the previous block and the next block will
+ * share the first portion, and the length of this portion
+ * would be the key length. 
+ * 
+ * Lets imagine a 3 byte key, and we are feeding 'A'
+ * 'A'      => [1, 4, 8, 8, 9, 4];
+ * 'AA'     => [3, 1, 1, 8, 1, 0];
+ * 'AAA'    => [8, 7, 1, 8, 0, 2];
+ * 'AAAA'   => [8, 7, 1, 1, 0, 1]; BOOM, block size detected!
+ * 
+ * Note: This function expects that the encryption funciton is 
+ * adding some extra data to the input, otherwise we could just
+ * send 1 byte and see what it gets padded to.
+ */
+export function detectBlockSize(encryptionFn: (Uint8Array) => Uint8Array) : number {
+  const MAX_BLOCK_SIZE_BYTES = 64;
+  const MIN_BLOCK_SIZE = 2;
+  let previousOutput = null;
+
+  for(let i = 1; i <= MAX_BLOCK_SIZE_BYTES; i++)
+  {
+    // Create an i sized array. We can use 0 for the value, it doesnt matter
+    // as long as the values are the same.
+    const input = new Uint8Array(i);
+    const output = encryptionFn(input);
+
+    if(previousOutput)
+    {
+      // Find the first difference in the two encryptions
+      const firstUnmatchingIndex = output.findIndex((value, index) => {
+        return previousOutput[index] !== value
+      })
+
+      if(firstUnmatchingIndex > MIN_BLOCK_SIZE && firstUnmatchingIndex !== -1)
+      {
+        // This index is our block size!
+        return firstUnmatchingIndex;
+      }
+    }
+
+    previousOutput = output;
+  }
+
+  return -1;
 }
