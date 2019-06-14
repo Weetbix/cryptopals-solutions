@@ -1,6 +1,7 @@
 import { ECB } from "https://www.unpkg.com/aes-es@3.0.0/dist/index.esm.js";
 import { chunk, flatten, equal } from "../array.ts";
 import { pad } from "../pkcs7/padding.ts";
+import { detectECBorCBC, Algorithm } from "./utils.ts";
 
 // In AES the block size is always 16 bytes / 128 bits
 // regardless of the key size
@@ -84,46 +85,48 @@ export function getTotalNumberOfRepeatedBlocks(
 
 /**
  * Detects the block size used for an AES cipher function
- * 
- * As ECB block cipher always returns the same block output 
- * for the same input, we can detect what the block size is 
- * by continuously feeding a new block into the cipher at the 
+ *
+ * As ECB block cipher always returns the same block output
+ * for the same input, we can detect what the block size is
+ * by continuously feeding a new block into the cipher at the
  * beginning. Then the first time we go OVER the threshold of
  * the key length, the previous block and the next block will
  * share the first portion, and the length of this portion
- * would be the key length. 
- * 
+ * would be the key length.
+ *
  * Lets imagine a 3 byte key, and we are feeding 'A'
  * 'A'      => [1, 4, 8, 8, 9, 4];
  * 'AA'     => [3, 1, 1, 8, 1, 0];
  * 'AAA'    => [8, 7, 1, 8, 0, 2];
  * 'AAAA'   => [8, 7, 1, 1, 0, 1]; BOOM, block size detected!
- * 
- * Note: This function expects that the encryption funciton is 
+ *
+ * Note: This function expects that the encryption funciton is
  * adding some extra data to the input, otherwise we could just
  * send 1 byte and see what it gets padded to.
  */
-export function detectBlockSize(encryptionFn: (Uint8Array) => Uint8Array) : number {
+export function detectBlockSize(
+  encryptionFn: (Uint8Array) => Uint8Array
+): number {
   const MAX_BLOCK_SIZE_BYTES = 64;
   const MIN_BLOCK_SIZE = 2;
   let previousOutput = null;
 
-  for(let i = 1; i <= MAX_BLOCK_SIZE_BYTES; i++)
-  {
+  for (let i = 1; i <= MAX_BLOCK_SIZE_BYTES; i++) {
     // Create an i sized array. We can use 0 for the value, it doesnt matter
     // as long as the values are the same.
     const input = new Uint8Array(i);
     const output = encryptionFn(input);
 
-    if(previousOutput)
-    {
+    if (previousOutput) {
       // Find the first difference in the two encryptions
       const firstUnmatchingIndex = output.findIndex((value, index) => {
-        return previousOutput[index] !== value
-      })
+        return previousOutput[index] !== value;
+      });
 
-      if(firstUnmatchingIndex > MIN_BLOCK_SIZE && firstUnmatchingIndex !== -1)
-      {
+      if (
+        firstUnmatchingIndex > MIN_BLOCK_SIZE &&
+        firstUnmatchingIndex !== -1
+      ) {
         // This index is our block size!
         return firstUnmatchingIndex;
       }
@@ -133,4 +136,28 @@ export function detectBlockSize(encryptionFn: (Uint8Array) => Uint8Array) : numb
   }
 
   return -1;
+}
+
+/**
+ * Implemented as described in ex 12
+ */
+export function byteByByteDecryption(encryptionFn: (Uint8Array) => Uint8Array) : string | null {
+  // Detect block size
+  const BLOCK_SIZE = detectBlockSize(encryptionFn);
+
+  // Detect that it's ECB, even though we know it is (see ex 12)
+  // Also feed this with some repeating data.
+  let repeatingInput =
+    "cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and cats and dogs and ";
+  const encoder = new TextEncoder();
+  const algorithm = detectECBorCBC(
+    encryptionFn(encoder.encode(repeatingInput))
+  );
+
+  if(algorithm !== Algorithm.ECB) {
+    return null;
+  }
+
+  console.log('got here');
+  return "ok";
 }
