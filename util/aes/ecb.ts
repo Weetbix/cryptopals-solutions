@@ -30,7 +30,7 @@ export function decrypt(key: string, data: Uint8Array): Uint8Array {
 
 export function encrypt(key: Uint8Array, data: Uint8Array): Uint8Array {
   if (key.length !== 16) {
-    throw new Error("Key length should be 128 bits");
+    throw new Error(`Key length should be 128 bits but was ${key.length} bytes`);
   }
 
   // Split the data into key size chunks for ECB
