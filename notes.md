@@ -45,3 +45,8 @@ detect this.
 It would seem to me that for the attack to be successful.. you need to
 be able to feed extra data into the start of the cipher. ie, without access
 to a function that encrypts your input + hidden input, how would you crack it?
+
+This one will take people a LONG time
+I suggest first 2weeks = try and get as far as you can, and validate
+that you understand how you SHOULD approach it. As not all is described in the text.
+2nd study group session is reflection and questions on unknowns + final implementation
